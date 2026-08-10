@@ -1,7 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import { formatDate } from "@/lib/utils";
 import type { AdminWorker } from "@/lib/types";
-import { X, Trash2, Edit2 } from "lucide-react";
+import { X, Trash2, Edit2, Download, RefreshCw } from "lucide-react";
 
 interface WorkerDetailSheetProps {
   worker: AdminWorker | null;
@@ -27,6 +30,8 @@ export default function WorkerDetailSheet({
   onEdit,
   onDelete,
 }: WorkerDetailSheetProps) {
+  const [pdfState, setPdfState] = useState<"idle" | "loading" | "error">("idle");
+
   if (!worker) return null;
 
   const initials = worker.full_name
@@ -35,6 +40,28 @@ export default function WorkerDetailSheet({
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
+  const handleDownloadPdf = async () => {
+    if (pdfState === "loading") return;
+    setPdfState("loading");
+    try {
+      const res = await fetch(`/api/admin/workers/${worker.id}/pdf`);
+      if (!res.ok) throw new Error("PDF failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Worker_${worker.full_name.replace(/\s+/g, "_")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setPdfState("idle");
+    } catch {
+      setPdfState("error");
+      setTimeout(() => setPdfState("idle"), 3000);
+    }
+  };
 
   return (
     <>
@@ -97,7 +124,7 @@ export default function WorkerDetailSheet({
           </div>
 
           {/* Details */}
-          <div className="bg-slate-50 rounded-2xl px-4 divide-y divide-slate-100 mb-6">
+          <div className="bg-slate-50 rounded-2xl px-4 divide-y divide-slate-100 mb-4">
             <DetailRow label="Worker ID" value={worker.id.slice(0, 8).toUpperCase() + "..."} />
             <DetailRow label="Mobile Number" value={`+91 ${worker.mobile_number}`} />
             <DetailRow label="Father's Name" value={worker.father_name} />
@@ -106,6 +133,34 @@ export default function WorkerDetailSheet({
             <DetailRow label="PAN" value={worker.pan_masked} />
             <DetailRow label="Registered On" value={formatDate(worker.registration_date)} />
           </div>
+
+          {/* Download PDF */}
+          <button
+            onClick={handleDownloadPdf}
+            disabled={pdfState === "loading"}
+            className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm mb-4 transition-all active:scale-95 ${
+              pdfState === "error"
+                ? "bg-red-50 text-red-600 border border-red-200"
+                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+            } disabled:opacity-70`}
+          >
+            {pdfState === "loading" ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Generating PDF…
+              </>
+            ) : pdfState === "error" ? (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                PDF Failed — Tap to Retry
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                Download Registration PDF
+              </>
+            )}
+          </button>
 
           {/* Actions */}
           <div className="flex gap-3 pb-[var(--sab)]">

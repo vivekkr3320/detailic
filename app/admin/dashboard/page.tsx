@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  RefreshCw,
 } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -31,6 +32,9 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // PDF state
+  const [pdfAllState, setPdfAllState] = useState<"idle" | "loading" | "error">("idle");
 
   // Modal state
   const [viewWorker, setViewWorker] = useState<AdminWorker | null>(null);
@@ -121,6 +125,28 @@ export default function AdminDashboard() {
     window.open("/api/admin/export", "_blank");
   };
 
+  const handleDownloadAllPdf = async () => {
+    if (pdfAllState === "loading") return;
+    setPdfAllState("loading");
+    try {
+      const res = await fetch("/api/admin/workers/pdf-all");
+      if (!res.ok) throw new Error("PDF report failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Workers_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setPdfAllState("idle");
+    } catch {
+      setPdfAllState("error");
+      setTimeout(() => setPdfAllState("idle"), 3000);
+    }
+  };
+
   const handleDelete = async (worker: AdminWorker) => {
     setDeleting(true);
     try {
@@ -164,11 +190,24 @@ export default function AdminDashboard() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={handleDownloadAllPdf}
+              disabled={pdfAllState === "loading"}
+              className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 transition-colors disabled:opacity-60"
+              title="Download All as PDF"
+            >
+              {pdfAllState === "loading" ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              {pdfAllState === "loading" ? "Building…" : pdfAllState === "error" ? "Failed" : "PDF Report"}
+            </button>
+            <button
               onClick={handleExport}
               className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-2 rounded-xl hover:bg-blue-100 transition-colors"
             >
               <Download className="w-4 h-4" />
-              Export CSV
+              CSV
             </button>
             <button
               onClick={handleLogout}
@@ -226,10 +265,16 @@ export default function AdminDashboard() {
             </button>
           )}
           <button
-            onClick={handleExport}
-            className="sm:hidden flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-blue-50 text-blue-600 font-semibold text-sm"
+            onClick={handleDownloadAllPdf}
+            disabled={pdfAllState === "loading"}
+            className="sm:hidden flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-emerald-50 text-emerald-700 font-semibold text-sm disabled:opacity-60"
+            title="Download All PDF"
           >
-            <Download className="w-4 h-4" />
+            {pdfAllState === "loading" ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
           </button>
         </div>
       </div>

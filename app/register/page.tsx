@@ -72,7 +72,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push(`/success?ref=${json.ref_id}`);
+      router.push(`/success?id=${json.id}&ref_id=${json.ref_id}`);
     } catch {
       setSubmitError("Network error. Please check your connection and try again.");
     } finally {
