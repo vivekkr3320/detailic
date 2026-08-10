@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { ClipboardList, ShieldCheck, Clock } from "lucide-react";
+import { ClipboardList, ShieldCheck, Clock, Download } from "lucide-react";
 import InstallPwaPrompt from "@/components/InstallPwaPrompt";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-700 to-blue-900 flex flex-col">
       {/* Header */}
-      <header className="px-5 pt-[calc(1rem+var(--sat))] pb-4">
+      <header className="px-5 pt-[calc(1rem+var(--sat))] pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
             <ClipboardList className="w-5 h-5 text-white" />
@@ -20,6 +20,16 @@ export default function LandingPage() {
             </h1>
           </div>
         </div>
+
+        <a
+          href="https://www.pwabuilder.com/reportcard?site=https://detailic.vercel.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 bg-amber-400 text-slate-900 text-xs font-bold px-3 py-2 rounded-xl shadow-md active:scale-95 transition-transform"
+        >
+          <Download className="w-4 h-4 text-slate-900" />
+          <span>Download App</span>
+        </a>
       </header>
 
       {/* Hero */}
