@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ClipboardList, ShieldCheck, Clock } from "lucide-react";
+import InstallPwaPrompt from "@/components/InstallPwaPrompt";
 
 export default function LandingPage() {
   return (
@@ -36,6 +37,9 @@ export default function LandingPage() {
             Submit your details to complete your worker registration. Takes
             about 2–3 minutes.
           </p>
+
+          {/* PWA Install Banner */}
+          <InstallPwaPrompt />
 
           {/* Info cards */}
           <div className="space-y-3 mb-10">

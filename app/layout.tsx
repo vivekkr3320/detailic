@@ -9,8 +9,18 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Worker Registration",
+  title: "Detailic - Worker Registration",
   description: "Register as a worker — submit your details securely.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Detailic",
+  },
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
   robots: "noindex, nofollow",
 };
 
